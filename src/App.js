@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button } from "@mui/material";
+import { Button, Modal } from "@mui/material";
 const axios = require("axios");
 function App() {
   const [product, setProduct] = useState([]);
-  const addProduct = async () => {
-    try {
-      const response = await axios.post("https://fakestoreapi.com/products", {
-        title: "test Nitin",
-        price: 13.5,
-        description: "lorem ipsum set",
-        image: "https://i.pravatar.cc",
-        category: "electronic",
-      });
-      setProduct(...product, response.data);
-      console.log("POSt", product);
-    } catch (error) {
-      console.error(error);
-    }
+  const [isOpen, setIsOpen] = useState(false);
+  //add item values
+  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addProduct();
+    setCategory("");
+    setDescription("");
+    setPrice("");
+    setTitle("");
   };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -30,15 +31,106 @@ function App() {
     };
 
     fetchProducts();
-  }, [product]);
+  }, []);
+
+  const addProduct = async () => {
+    try {
+      const response = await axios.post("https://fakestoreapi.com/products", {
+        title: title,
+        price: price,
+        description: description,
+        image: "https://i.pravatar.cc",
+        category: category,
+      });
+      setProduct((product) => [response.data, ...product]);
+      handleModal();
+      console.log("USEEFFECT RUN", product.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    console.log(id);
+    url = `https://fakestoreapi.com/products/${id}`;
+    try {
+      const response = await axios.delete(url);
+      setProduct((product) =>
+        product.filter((item) => item.id !== response?.data?.id)
+      );
+      console.log("DEL", response);
+      console.log("DEL_PROD", product);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleModal = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
-    <div className="bg-red-500">
+    <div className="bg-red-50">
+      <Modal open={isOpen} close={handleModal}>
+        <div className="w-96 bg-white">
+          <h1>This is a Modal Heading</h1>
+          <form>
+            <div>
+              <label htmlFor="Title">Title</label>
+              <input
+                type="text"
+                placeholder="Enter Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="description">Description</label>
+              <input
+                type="text"
+                placeholder="Enter Description"
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="description">price</label>
+              <input
+                type="text"
+                placeholder="Enter price"
+                id="price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="category">category</label>
+              <input
+                type="text"
+                placeholder="Enter category"
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={(e) => {
+                handleSubmit(e);
+              }}
+            >
+              Save
+            </button>
+          </form>
+          <button onClick={handleModal}>CLOSE</button>
+        </div>
+      </Modal>
+
       <div>
         <Button
           className="bg-white text-slate-500 font-display"
           onClick={() => {
-            addProduct();
+            handleModal();
           }}
         >
           Add Product
@@ -47,7 +139,7 @@ function App() {
       <div className="flex flex-wrap mx-20 gap-10">
         {product.map((item) => {
           return (
-            <div className="w-96 bg-slate-50" key={item?.id}>
+            <div className="w-80 bg-slate-50" key={item?.id}>
               <div>
                 <img
                   className="w-40 aspect-square object-contain"
@@ -56,8 +148,10 @@ function App() {
                 />
               </div>
               <h1>{item?.title}</h1>
+              <h2>{item?.id}</h2>
               <p>{item?.price}</p>
               <p>{item?.description}</p>
+              <Button onClick={() => deleteProduct(item?.id)}>DELETE</Button>
             </div>
           );
         })}
