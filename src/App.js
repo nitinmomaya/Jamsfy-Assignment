@@ -246,6 +246,9 @@ function App() {
           <h1 className="text-slate-700 text-xl font-display font-semibold">
             {`Hi, ${user?.name}`}
           </h1>
+          <h1 className="text-slate-700 text-lg font-display ">
+            {user?.email}
+          </h1>
           <p className="text-slate-500 font-display">
             Welcome to the Jamsfy Assignment
           </p>
