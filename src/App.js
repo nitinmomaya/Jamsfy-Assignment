@@ -6,6 +6,9 @@ function App() {
   const [product, setProduct] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdate, setIsUpdate] = useState(0);
+  const [isAsc, setIsAsc] = useState(true);
+  let sort = "asc";
+
   //add item values
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
@@ -105,6 +108,23 @@ function App() {
     setIsUpdate(id);
   };
 
+  const handleAsc = async () => {
+    try {
+      const response = await axios.get(
+        "https://fakestoreapi.com/products?sort=asc"
+      );
+      setProduct(response.data);
+    } catch (error) {}
+  };
+  const handleDesc = async () => {
+    try {
+      const response = await axios.get(
+        "https://fakestoreapi.com/products?sort=desc"
+      );
+      setProduct(response.data);
+    } catch (error) {}
+  };
+
   // const updateProduct = async (id) => {
   //   console.log("UPDATE", id);
   //   try {
@@ -196,6 +216,11 @@ function App() {
         >
           Add Product
         </Button>
+        <div>
+          Sort by:
+          <Button onClick={handleAsc}>Ascending</Button>
+          <Button onClick={handleDesc}>Descending</Button>
+        </div>
       </div>
       <div className="flex flex-wrap mx-20 gap-10">
         {product.map((item) => {
