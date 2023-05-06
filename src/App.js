@@ -19,7 +19,7 @@ import ProtectedRoute from "./compoenent/ProtectedRoute";
 import { useSelector } from "react-redux";
 import { selectUser } from "./slice/userSlice";
 import ProductShimmer from "./compoenent/ProductShimmer";
-const axios = require("axios");
+
 function App() {
   const navigate = useNavigate();
   const [product, setProduct] = useState([]);
