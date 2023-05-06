@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import axios from "axios";
 import {
   Button,
@@ -10,19 +11,28 @@ import {
   Modal,
   TextField,
 } from "@mui/material";
+import { createBrowserRouter, useNavigate } from "react-router-dom";
+import Login from "./Login";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase";
+import ProtectedRoute from "./compoenent/ProtectedRoute";
+import { useSelector } from "react-redux";
+import { selectUser } from "./slice/userSlice";
 const axios = require("axios");
 function App() {
+  const navigate = useNavigate();
   const [product, setProduct] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdate, setIsUpdate] = useState(0);
-  const [isAsc, setIsAsc] = useState(true);
-  let sort = "asc";
 
   //add item values
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
+
+  //user details
+  const user = useSelector(selectUser);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -133,7 +143,17 @@ function App() {
       setProduct(response.data);
     } catch (error) {}
   };
-
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        navigate("/login");
+      })
+      .catch((error) => {
+        // An error happened.
+        console.log(error);
+      });
+  };
   // const updateProduct = async (id) => {
   //   console.log("UPDATE", id);
   //   try {
@@ -160,7 +180,7 @@ function App() {
   };
 
   return (
-    <div className="w-full m-20">
+    <div className="w-full">
       <Dialog open={isOpen} onClose={handleModal}>
         <DialogTitle>Add Product</DialogTitle>
         <DialogContent>
@@ -218,23 +238,30 @@ function App() {
           </Button>
         </DialogActions>
       </Dialog>
-      <div className="flex flex-col gap-2">
-        <h1 className="text-slate-700 text-xl font-display font-semibold">
-          Hi, Nitin Momaya
-        </h1>
-        <p className="text-slate-500 font-display">
-          Welcome to the Jamsfy Assignment
-        </p>
+      <div className="flex px-20 pt-20 gap-2 justify-between">
+        <div>
+          <h1 className="text-slate-700 text-xl font-display font-semibold">
+            {`Hi, ${user?.name}`}
+          </h1>
+          <p className="text-slate-500 font-display">
+            Welcome to the Jamsfy Assignment
+          </p>
+        </div>
+        <div>
+          <Button variant="outlined" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
       </div>
-      <div className="flex gap-8">
-        <div className="total-product w-40 my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
+      <div className="flex justify-between px-20 gap-8">
+        <div className="total-product w-full my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
           <h1 className="text-slate-400  font-display">Total Product</h1>
           <h2 className="text-slate-700 text-xl  font-semibold font-display">
             {product.length}
           </h2>
         </div>
 
-        <div className="w-fit my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
+        <div className="w-full my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
           <h1 className="font-display text-slate-500">Sort By:</h1>
           <div className="flex gap-4">
             <Button variant="outlined" onClick={handleAsc}>
@@ -245,7 +272,7 @@ function App() {
             </Button>
           </div>
         </div>
-        <div className="w-fit my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
+        <div className="w-full my-4 flex flex-col gap-2 px-4 py-4 rounded-md border-solid border-[1px] border-slate-100 ">
           <h1 className="font-display text-slate-500">Add more Product</h1>
           <Button variant="contained" onClick={handleModal}>
             Add Product
@@ -253,11 +280,11 @@ function App() {
         </div>
       </div>
 
-      <div className="flex w-full flex-wrap my-10 gap-10">
+      <div className="flex w-full justify-between flex-wrap  px-20 gap-4">
         {product.map((item) => {
           return (
             <div
-              className="w-96 h-fit bg-white p-8 rounded-md border-solid border-[1px] border-slate-100"
+              className="w-96 h-max bg-white p-8 rounded-md border-solid border-[1px] border-slate-100"
               key={item?.id}
             >
               <div className="my-4">
@@ -300,63 +327,22 @@ function App() {
   );
 }
 
-export default App;
-//  <Modal open={isOpen} close={handleModal}>
-//    <div className="lg:w-[600px] sm:w-[600px] w-[350px] bg-white flex flex-col justify-center items-center space-y-6 rounded-lg ">
-//      <h1>This is a Modal Heading</h1>
-//      <form>
-//        <div className="flex gap-2 flex-col">
-//          <TextField
-//            id="outlined-basic"
-//            label="Title"
-//            variant="outlined"
-//            type="text"
-//            placeholder="Enter Title"
-//            value={title}
-//            onChange={(e) => setTitle(e.target.value)}
-//          />
+export const appRouter = createBrowserRouter([
+  {
+    path: "/",
 
-//          <TextField
-//            id="outlined-basic"
-//            label="Description"
-//            variant="outlined"
-//            type="text"
-//            placeholder="Enter Description"
-//            value={description}
-//            onChange={(e) => setDescription(e.target.value)}
-//          />
+    element: (
+      // <Suspense fallback={<AppShimmer />}>
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
 
-//          <TextField
-//            id="outlined-basic"
-//            label="Price"
-//            variant="outlined"
-//            type="text"
-//            placeholder="Enter Price"
-//            value={price}
-//            onChange={(e) => setPrice(e.target.value)}
-//          />
+      // </Suspense>
+    ),
+  },
+  {
+    path: "/login",
 
-//          <TextField
-//            id="outlined-basic"
-//            label="Category"
-//            variant="outlined"
-//            type="text"
-//            placeholder="Enter Category"
-//            value={category}
-//            onChange={(e) => setCategory(e.target.value)}
-//          />
-//        </div>
-//        <Button
-//          variant="contained"
-//          onClick={(e) => {
-//            handleSubmit(e);
-//          }}
-//        >
-//          Save
-//        </Button>
-//      </form>
-//      <Button varaiant="outlined" onClick={handleModal}>
-//        CLOSE
-//      </Button>
-//    </div>
-//  </Modal>;
+    element: <Login />,
+  },
+]);
