@@ -5,6 +5,7 @@ const axios = require("axios");
 function App() {
   const [product, setProduct] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(0);
   //add item values
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
@@ -31,20 +32,47 @@ function App() {
     };
 
     fetchProducts();
+    console.log("NEW EFEFCT", product);
   }, []);
 
   const addProduct = async () => {
     try {
-      const response = await axios.post("https://fakestoreapi.com/products", {
-        title: title,
-        price: price,
-        description: description,
-        image: "https://i.pravatar.cc",
-        category: category,
-      });
-      setProduct((product) => [response.data, ...product]);
-      handleModal();
-      console.log("USEEFFECT RUN", product.length);
+      if (isUpdate) {
+        console.log("UPDATE RUNED");
+
+        const editProduct = product.find((obj) => obj.id == isUpdate);
+        console.log("UPD", editProduct);
+        const updatedProduct = product.map((t) =>
+          t.id === editProduct.id
+            ? (t = {
+                title: title,
+                price,
+                category,
+                description,
+                image: t.image,
+              })
+            : {
+                title: t.title,
+                description: t.description,
+                category: t.category,
+                price: t.price,
+                image: t.image,
+              }
+        );
+        console.log("NEW", updatedProduct);
+        setProduct(updatedProduct);
+      } else {
+        const response = await axios.post("https://fakestoreapi.com/products", {
+          title: title,
+          price: price,
+          description: description,
+          image: "https://i.pravatar.cc",
+          category: category,
+        });
+        setProduct((product) => [response.data, ...product]);
+        handleModal();
+        console.log("USEEFFECT RUN", product.length);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -65,7 +93,40 @@ function App() {
     }
   };
 
-  const handleModal = () => {
+  const handleUpdate = (id) => {
+    console.log("product upd", product);
+    const prod = product.filter((item) => item.id === id);
+    console.log("handleup", prod, prod[0].category);
+    handleModal(prod);
+    setTitle(prod[0].title);
+    setPrice(prod[0].price);
+    setCategory(prod[0].category);
+    setDescription(prod[0].description);
+    setIsUpdate(id);
+  };
+
+  // const updateProduct = async (id) => {
+  //   console.log("UPDATE", id);
+  //   try {
+  //     const response = await axios.put(
+  //       `https://fakestoreapi.com/products/${id}`,
+  //       {
+  //         title: prod[0].title,
+  //         price: prod[0].price,
+  //         description: prod[0].description,
+  //         image: "https://i.pravatar.cc",
+  //         category: prod[0].category,
+  //       }
+  //     );
+  //     console.log("UPDATE RES", res);
+  //     handleUpdate(res);
+  //     // setProduct((product) => product.filter((item) => item.id === id));
+
+  //     console.log("UPDATE RUN", product.length);
+  //   } catch (error) {}
+  // };
+
+  const handleModal = (id) => {
     setIsOpen(!isOpen);
   };
 
@@ -152,6 +213,7 @@ function App() {
               <p>{item?.price}</p>
               <p>{item?.description}</p>
               <Button onClick={() => deleteProduct(item?.id)}>DELETE</Button>
+              <Button onClick={() => handleUpdate(item?.id)}>Update</Button>
             </div>
           );
         })}
