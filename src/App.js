@@ -18,12 +18,14 @@ import { auth } from "./firebase";
 import ProtectedRoute from "./compoenent/ProtectedRoute";
 import { useSelector } from "react-redux";
 import { selectUser } from "./slice/userSlice";
+import ProductShimmer from "./compoenent/ProductShimmer";
 const axios = require("axios");
 function App() {
   const navigate = useNavigate();
   const [product, setProduct] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdate, setIsUpdate] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   //add item values
   const [description, setDescription] = useState("");
@@ -48,6 +50,7 @@ function App() {
       try {
         const response = await axios.get("https://fakestoreapi.com/products");
         setProduct(response.data);
+        setIsLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -280,49 +283,58 @@ function App() {
         </div>
       </div>
 
-      <div className="flex w-full justify-between flex-wrap  px-20 gap-4">
-        {product.map((item) => {
-          return (
-            <div
-              className="w-96 h-max bg-white p-8 rounded-md border-solid border-[1px] border-slate-100"
-              key={item?.id}
-            >
-              <div className="my-4">
-                <img
-                  className="w-40 aspect-square object-contain"
-                  src={item?.image}
-                  alt=""
-                />
-              </div>
-              <h1 className="font-display text-xl font-semibold text-slate-700">
-                {item?.title}
-              </h1>
+      {isLoading ? (
+        <div className="w-full flex flex-wrap justify-between">
+          <ProductShimmer />
+          <ProductShimmer />
+          <ProductShimmer />
+          <ProductShimmer />
+        </div>
+      ) : (
+        <div className="flex w-full justify-between flex-wrap  px-20 gap-4">
+          {product.map((item) => {
+            return (
+              <div
+                className="w-96 h-max bg-white p-8 rounded-md border-solid border-[1px] border-slate-100"
+                key={item?.id}
+              >
+                <div className="my-4">
+                  <img
+                    className="w-40 aspect-square object-contain"
+                    src={item?.image}
+                    alt=""
+                  />
+                </div>
+                <h1 className="font-display text-xl font-semibold text-slate-700">
+                  {item?.title}
+                </h1>
 
-              <h2 className="font-display text-lg font-semibold text-slate-700">
-                {item?.price}
-              </h2>
-              <p className="font-display text-base  text-slate-500">
-                {item?.description}
-              </p>
-              <div className="flex gap-4 my-4">
-                <Button
-                  color="error"
-                  variant="contained"
-                  onClick={() => deleteProduct(item?.id)}
-                >
-                  DELETE
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleUpdate(item?.id)}
-                >
-                  Update
-                </Button>
+                <h2 className="font-display text-lg font-semibold text-slate-700">
+                  {item?.price}
+                </h2>
+                <p className="font-display text-base  text-slate-500">
+                  {item?.description}
+                </p>
+                <div className="flex gap-4 my-4">
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={() => deleteProduct(item?.id)}
+                  >
+                    DELETE
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleUpdate(item?.id)}
+                  >
+                    Update
+                  </Button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
